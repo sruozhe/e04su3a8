@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Shuffle, Volume2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const PROFANITY_LIST = [
+  // English
+  "fuck your ass",
+  "shit head",
+  "damn it",
+  "fuck off",
+  "go to hell",
+  "what the fuck",
+  "holy shit",
+  "fucking hell",
+  "piece of shit",
+  "son of a bitch",
+  "fuck you",
+  "bullshit",
+  "asshole",
+  "dickhead",
+  "motherfucker",
+  
+  // Chinese (Traditional)
+  "幹你娘",
+  "靠北",
+  "幹",
+  "操你媽",
+  "去死",
+  "白痴",
+  "智障",
+  "廢物",
+  "垃圾",
+  "腦殘",
+  "北七",
+  "三小",
+  "幹你老師",
+  "機掰",
+  "王八蛋",
+  
+  // More English variations
+  "what a dickhead",
+  "fuck this shit",
+  "are you fucking kidding me",
+  "this is fucking stupid",
+  "go fuck yourself",
+  "eat shit",
+  "kiss my ass",
+  "screw you",
+  "damn bastard",
+  "fucking moron"
+];
+
+export default function Home() {
+  const [currentWord, setCurrentWord] = useState('');
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+
+  const generateRandomWord = () => {
+    setIsAnimating(true);
+    setClickCount(prev => prev + 1);
+    
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * PROFANITY_LIST.length);
+      setCurrentWord(PROFANITY_LIST[randomIndex]);
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  const speakText = () => {
+    if ('speechSynthesis' in window && currentWord) {
+      const utterance = new SpeechSynthesisUtterance(currentWord);
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  useEffect(() => {
+    generateRandomWord();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4 overflow-hidden relative">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-40 left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
+      </div>
+
+      <div className="relative z-10 max-w-4xl mx-auto text-center">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-12"
+        >
+          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 mb-4 leading-tight">
+            PROFANITY
+          </h1>
+          <h2 className="text-2xl md:text-3xl font-light text-gray-300 mb-2">
+            GENERATOR
+          </h2>
+          <p className="text-gray-400 text-lg">
+            Random curse words for you and your friends
+          </p>
+        </motion.div>
+
+        {/* Word Display */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-12"
+        >
+          <div className="bg-black/40 backdrop-blur-lg rounded-3xl p-8 md:p-12 border border-purple-500/20 shadow-2xl min-h-[200px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              {!isAnimating ? (
+                <motion.div
+                  key={currentWord}
+                  initial={{ opacity: 0, rotateX: -90, scale: 0.8 }}
+                  animate={{ opacity: 1, rotateX: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotateX: 90, scale: 0.8 }}
+                  transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+                  className="text-center"
+                >
+                  <div className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight break-words">
+                    {currentWord}
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={speakText}
+                    className="text-gray-400 hover:text-purple-400 transition-colors duration-200"
+                    title="Speak it out loud"
+                  >
+                    <Volume2 className="w-6 h-6" />
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-3 text-purple-400"
+                >
+                  <div className="w-8 h-8 border-4 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-xl font-medium">Loading...</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* Generate Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mb-8"
+        >
+          <Button
+            onClick={generateRandomWord}
+            disabled={isAnimating}
+            className="group relative px-12 py-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-xl rounded-full shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 border-0 min-w-[200px]"
+          >
+            <motion.div
+              className="flex items-center gap-3"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Shuffle className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+              Generate Random
+            </motion.div>
+            
+            {/* Ripple effect */}
+            <motion.div
+              className="absolute inset-0 rounded-full bg-white/20"
+              initial={{ scale: 0, opacity: 0.5 }}
+              animate={{ scale: clickCount > 0 ? [0, 1.5] : 0, opacity: [0.5, 0] }}
+              transition={{ duration: 0.6 }}
+              key={clickCount}
+            />
+          </Button>
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="text-gray-400 text-sm space-y-2"
+        >
+          <p>Over {PROFANITY_LIST.length} curse words in multiple languages</p>
+          <p className="text-xs text-gray-500">
+            Click count: {clickCount} | Made with 💀 for fun
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-purple-400/30 rounded-full"
+            initial={{
+              x: Math.random() * window.innerWidth,
+              y: Math.random() * window.innerHeight,
+            }}
+            animate={{
+              y: [null, -100],
+              opacity: [0.3, 0],
+            }}
+            transition={{
+              duration: Math.random() * 3 + 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
